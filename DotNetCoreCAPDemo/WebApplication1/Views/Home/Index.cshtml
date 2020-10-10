@@ -1,0 +1,26 @@
+﻿
+@{
+    ViewData["Title"] = "Home Page";
+}
+@model HomeViewModel;
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <label >事件消息：</label>
+    <label>@Model.EventData</label>
+
+    @*@using (Html.BeginForm("Home/SendMsg"))
+    {
+        <div>
+            发送消息: @Html.DisplayFor(x => x.SendMsg,new { style = "Width:100px" })
+            <button type="submit">发送</button>
+        </div>
+    }*@
+    
+
+    <form asp-route="Home/SendMsg" method="post">
+        <label>发送消息:</label>
+        <input asp-for="@Model.SendMsg" style="width: 200px;" /><br />
+        <button type="submit">Post</button>
+    </form>
+</div>
