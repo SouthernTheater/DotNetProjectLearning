@@ -9,5 +9,6 @@
 1. DotNetCoreCAP
 2. Hangfire
 3. Swashbuckle.AspNetCore
+4. MediatR
 
 
