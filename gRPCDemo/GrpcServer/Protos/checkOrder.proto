@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+// 其他类型引入文档：https://docs.microsoft.com/zh-cn/aspnet/core/grpc/protobuf?view=aspnetcore-3.1
+//引入可空类型
+import "google/protobuf/wrappers.proto";
+// 引入时间类型
+import "google/protobuf/timestamp.proto";
+
+//定义命名空间，客户端连接需要设置为同一命名空间
+option csharp_namespace = "GrpcServer";
+
+//包名，可以加入版本号，如接口参数有修改可以用版本号来区分
+package checkOrder.v1;
+
+// 服务名定义
+service checkOrder {
+  // rpc 接口声明
+
+  // 检测是否为同一订单
+  rpc IsSameOrder (OrderRequest) returns (OrderReply);
+}
+
+// 定义请求信息类
+message OrderRequest {
+  string OrderNumber=1;
+  string Name = 2;
+  string Telphone=3;
+  string Province=4;
+  string City=5;
+  string Address=6;
+  // 运费
+  float Freight=7;
+  // 创建时间
+  google.protobuf.Timestamp CreationTime=8;
+  // 包裹列表 加关键字repeated
+  repeated PackageRequest PackageList=9;
+}
+
+
+message PackageRequest {
+    string OrderNumber=1;
+	google.protobuf.FloatValue Length=2;
+	google.protobuf.FloatValue Width=3;
+	google.protobuf.FloatValue Height=4;
+	float Weight=5;
+}
+
+// 定义响应信息类
+message OrderReply {
+  string message = 1;
+  bool isSame=2;
+}
