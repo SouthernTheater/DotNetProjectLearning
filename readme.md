@@ -10,5 +10,6 @@
 2. Hangfire
 3. Swashbuckle.AspNetCore
 4. MediatR
+5. gRPC
 
 
