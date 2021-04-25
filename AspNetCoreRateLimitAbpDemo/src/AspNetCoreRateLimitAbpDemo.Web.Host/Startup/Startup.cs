@@ -16,6 +16,8 @@ using AspNetCoreRateLimitAbpDemo.Identity;
 using Abp.AspNetCore.SignalR.Hubs;
 using Abp.Dependency;
 using Abp.Json;
+using AspNetCoreRateLimit;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
@@ -39,6 +41,24 @@ namespace AspNetCoreRateLimitAbpDemo.Web.Host.Startup
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            #region WebApi配置前
+            // needed to load configuration from appsettings.json
+            services.AddOptions();
+
+            // needed to store rate limit counters and ip rules
+            services.AddMemoryCache();
+
+            //load general configuration from appsettings.json
+            services.Configure<ClientRateLimitOptions>(_appConfiguration.GetSection("ClientRateLimiting"));
+
+            //load client rules from appsettings.json
+            services.Configure<ClientRateLimitPolicies>(_appConfiguration.GetSection("ClientRateLimitPolicies"));
+
+            // inject counter and rules stores
+            services.AddSingleton<IClientPolicyStore, MemoryCacheClientPolicyStore>();
+            services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>(); 
+            #endregion
+
             //MVC
             services.AddControllersWithViews(
                 options =>
@@ -53,6 +73,16 @@ namespace AspNetCoreRateLimitAbpDemo.Web.Host.Startup
                 };
             });
 
+
+            #region  WebApi配置后
+            // https://github.com/aspnet/Hosting/issues/793
+            // the IHttpContextAccessor service is not registered by default.
+            // the clientId/clientIp resolvers use it.
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            // configuration (resolvers, counter key builders) 
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+            #endregion
 
 
             IdentityRegistrar.Register(services);
@@ -125,6 +155,8 @@ namespace AspNetCoreRateLimitAbpDemo.Web.Host.Startup
 
         public void Configure(IApplicationBuilder app,  ILoggerFactory loggerFactory)
         {
+            app.UseClientRateLimiting();
+
             app.UseAbp(options => { options.UseAbpRequestLocalization = false; }); // Initializes ABP framework.
 
             app.UseCors(_defaultCorsPolicyName); // Enable CORS!
